@@ -31,54 +31,83 @@
 #include <string.h>
 
 static void CLK_init(void);
+static void EUSART1_init(void);
 static void EUSART2_init(void);
 static void PPS_init(void);
 static void PORT_init(void);
+static void EUSART1_write(uint8_t txData);
 static void EUSART2_write(uint8_t txData);
 
 static void CLK_init(void)
 {   
     /* Set HFINTOSC as new oscillator source */
     OSCCON1bits.NOSC = 0b110;
-    
+
     /* Set HFFRQ to 1 MHz */
     OSCFRQbits.HFFRQ = 0;
 }
 
-static void EUSART2_init(void)
+static void EUSART1_init(void)
 {
     /* Transmit Enable */
     U1CON0bits.TXEN = 1;
     /* High Baud Rate Select */
     U1CON0bits.BRGS = 1;
-    
+
     /* 16-bit Baud Rate Generator is used */
     //BAUD2CONbits.BRG16 = 1;
-    
+
     /* Baud rate 9600 */
     U1BRGL = 25;
     U1BRGH = 0;
-    
+
     /* Serial Port Enable */
     U1CON1bits.ON = 1;
+}
+
+static void EUSART2_init(void)
+{
+    /* Transmit Enable */
+    U2CON0bits.TXEN = 1;
+    /* High Baud Rate Select */
+    U2CON0bits.BRGS = 1;
+
+    /* 16-bit Baud Rate Generator is used */
+    //BAUD2CONbits.BRG16 = 1;
+
+    /* Baud rate 9600 */
+    U2BRGL = 25;
+    U2BRGH = 0;
+
+    /* Serial Port Enable */
+    U2CON1bits.ON = 1;
 }
 
 static void PPS_init(void) 
 {
     /* RC7 is RX1*/
     U1RXPPS = 0x17;
-    
+
     /* RC6 is TX1 */
     RC6PPS = 0x13;
+
+    /* RC1 is RX2*/
+    U2RXPPS = 0x11;
+
+    /* RC0 is TX2 */
+    RC0PPS = 0x16;
 }
 
 static void PORT_init(void)
 {
     /* Configure RC6 as output. */
     TRISCbits.TRISC6 = 0;
+
+    /* Configure RC0 as output. */
+    TRISCbits.TRISC0 = 0;
 }
 
-static void EUSART2_write(uint8_t txData)
+static void EUSART1_write(uint8_t txData)
 {
     while(0 == PIR3bits.U1TXIF)
     {
@@ -88,11 +117,23 @@ static void EUSART2_write(uint8_t txData)
     U1TXB = txData;
 }
 
+static void EUSART2_write(uint8_t txData)
+{
+    while(0 == PIR7bits.U2TXIF)
+    {
+        ;
+    }
+
+    U2TXB = txData;
+}
+
 void main(void)
 {
     char msg[] = "Hello World\r\n";
+    char msg2[] = "Hallo Welt\r\n";
 
     CLK_init();
+    EUSART1_init();
     EUSART2_init();  
     PPS_init();   
     PORT_init();
@@ -101,6 +142,7 @@ void main(void)
     {
         for(uint8_t i = 0; i < strlen(msg); i++) 
         {
+            EUSART1_write(msg2[i]);
             EUSART2_write(msg[i]);
         }
     }
