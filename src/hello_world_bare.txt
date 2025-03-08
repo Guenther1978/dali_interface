@@ -28,7 +28,13 @@
 
 #include <xc.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
+//#include <PIC18F.h>
+
+const char msg[] = "Hello World\r\n";
+const uint8_t kAsciiCodeReturn = 0x0D;
+const uint8_t kMaxLength = 0x03;
 
 static void CLK_init(void);
 static void EUSART1_init(void);
@@ -84,7 +90,7 @@ static void EUSART2_init(void)
     U2BRGH = 0;
 
     /* Serial Port Enable */
-    U2CON1bits.On = 1;
+    U2CON1bits.ON = 1;
 }
 
 static void PPS_init(void) 
@@ -183,11 +189,10 @@ char getch2(void)
 
 void main(void)
 {
-    char msg[] = "Hello World\r\n";
-    char msg2[] = "Hallo Welt\r\n";
-
-    char c1 = ' ';
-    char c2 = ' ';
+    char c = ' ';
+    char buffer[] = {0, 0, 0, 0};
+    
+    uint8_t length = 0;
 
     CLK_init();
     EUSART1_init();
@@ -197,15 +202,24 @@ void main(void)
 
     for(uint8_t i = 0; i < strlen(msg); i++)
     {
-        EUSART1_write(msg2[i]);
-        EUSART2_write(msg[i]);
+        EUSART1_write(msg[i]);
     }
     
     while(1) 
     {
-        c1 = getch1();
-        putch2(c1);
-        c2 = getch2();
-        putch1(c2);
+        length = 0;
+        c = ' ';
+        while ((c != kAsciiCodeReturn) && (length < kMaxLength))
+        {
+            c = getch1();
+            putch1(c);
+            buffer[length] = c;
+            length ++;
+        }
+        for(uint8_t i = 0; i < strlen(msg); i++)
+        {
+            EUSART1_write(buffer[i]);
+            EUSART2_write(buffer[i]);
+        }        
     }
 }
