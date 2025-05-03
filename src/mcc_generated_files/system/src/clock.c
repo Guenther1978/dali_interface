@@ -38,7 +38,7 @@
 
 void CLOCK_Initialize(void)
 {
-    // Set the CLOCK CONTROL module to the options selected in the user interface.
+/*    // Set the CLOCK CONTROL module to the options selected in the user interface.
     OSCCON1 = (0 << _OSCCON1_NDIV_POSN)   // NDIV 1
         | (6 << _OSCCON1_NOSC_POSN);  // NOSC HFINTOSC
     OSCCON3 = (0 << _OSCCON3_SOSCPWR_POSN)   // SOSCPWR Low power
@@ -52,6 +52,11 @@ void CLOCK_Initialize(void)
     OSCFRQ = (8 << _OSCFRQ_HFFRQ_POSN);  // HFFRQ 64_MHz
     OSCTUNE = (0 << _OSCTUNE_TUN_POSN);  // TUN 0x0
 
+    /* Set HFINTOSC as new oscillator source */
+    OSCCON1bits.NOSC = 0b110;
+
+    /* Set HFFRQ to 1 MHz */
+    OSCFRQbits.HFFRQ = 0;
 }
 /**
  End of File

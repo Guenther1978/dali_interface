@@ -57,7 +57,7 @@ int main(void)
     ANSELCbits.ANSELC7 = 0;
     TRISCbits.TRISC6 = 0;
     TRISBbits.TRISB5 = 1;
-    ANSELBbits.ANSELB3 = 0;
+    ANSELBbits.ANSELB5 = 0;
     TRISBbits.TRISB4 = 0;
     
     U1CON2bits.TXPOL = 0;
@@ -107,7 +107,8 @@ int main(void)
     
     while(1)
     {
-        if (UART1_IsRxReady()) {
+        if (UART1_IsRxReady())
+        {
             character_uart_1 = UART1_Read();
             if (UART1_IsTxReady())
             {
@@ -119,24 +120,17 @@ int main(void)
             }
         }
 
-        if (UART2_IsRxReady()) {
-/*            character_uart_2 = UART2_Read();
+        if (UART2_IsRxReady())
+        {
+            character_uart_2 = UART2_Read();
             if (UART1_IsTxReady())
             {
-                UART1_Write('a');//character_uart_2);
+                UART1_Write(character_uart_2);
             }
-            //if (UART2_IsTxReady())
+            if (UART2_IsTxReady())
             {
-                UART2_Write('b');//character_uart_2);
+                UART2_Write(character_uart_2);
             }
         }
-*/        character_uart_2 = UART2_Read();
-        if (character_uart_2 != 0)
-        {
-            UART1_Write(character_uart_2);
-            UART2_Write(character_uart_2);
-            character_uart_2 = 0;
-        }            
-    }    
-}
+    }
 }

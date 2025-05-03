@@ -86,7 +86,7 @@ void __interrupt() INTERRUPT_InterruptManager (void)
     }
     else if(PIE3bits.U1RXIE == 1 && PIR3bits.U1RXIF == 1)
     {
-h        UART1_RxInterruptHandler();
+        UART1_RxInterruptHandler();
     }
     else if(PIE7bits.U2TXIE == 1 && PIR7bits.U2TXIF == 1)
     {
