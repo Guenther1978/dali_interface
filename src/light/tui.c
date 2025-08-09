@@ -60,3 +60,9 @@ void MoveCursorUp(void) {
       UART1_write(msg[i]);
   }
 }
+
+void PrintBottomOrUpperLine(uint8_t) {
+}
+
+void PrintMiddleLine(uint8_t);
+}
