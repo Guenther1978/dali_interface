@@ -2,12 +2,14 @@
 // @file
 ///
 
-#ifndef DALIINTERFACE_LIGHT_TUI
-#define DALIINTERFACE_LIGHT_TUI
+#ifndef _DALIINTERFACE_LIGHT_TUI
+#define _DALIINTERFACE_LIGHT_TUI
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 
+const char ESC_HOME[] = "\x1B[H";
 const char* kCursorBackward = {"\033["};
 const char* kCursorDown = {"\033["};
 const char* kCursorForward = {"\033["};
@@ -19,40 +21,34 @@ const uint8_t kIndexFirstLine = 1;
 const uint8_t kNumberOfColumns = 80;
 const uint8_t kNumberOfLines = 24;
 
-typedef struct tui {
-  unsigned char buffer[16],
-  uint8_t pointer = 0,
+void ClearScreen(unsigned char *);
+
+void ClearBuffer(unsigned char * buffer, unsigned char size_of_buffer) {
+  for (int i = 0; i < size_of_buffer; i ++) {
+    buffer[i] = ' ';
+  }
 }
 
-typedef struct Point {
-  uint8_t column;
-  uint8_t line;
-};
+void WriteCommand(unsigned char *puffer) {
+  puffer[0] = 0x1B;
+  puffer[1] = '[';
+}
 
-typedef struct Line {
-  struct Point;
-  uint8_t length;
-};
+void ClearScreen(unsigned char * puffer) {
+  ClearBuffer(puffer, 16);
+  WriteCommand(puffer);
+  puffer[2] = 'H';
+  puffer[3] = 0;
+}
 
-typedef struct Rectangle {
-  struct Point;
-  uint8_t colums;
-  uint8_t lines;
-};
+void MoveCursorToPosition(uint8_t x, uint8_t y, unsigned char* puffer) {
+  puffer[0] = 27;
+  puffer[1] = '[';
+  sprintf(puffer+2, "%d;%dH",y,x); 
+}
 
-void DrawCorner(void);
-void DrawHorizontalLineFromLeft2Right(uint8_t);
-void DrawHorizontalLineFromRight2Left(uint8_t);
-void DrawBlankRectangle();
-void DrawRectangle(uint8_t, uint8_t);
-void DrawVerticalLineFromBottom2Top(uint8_t);
-void DrawVerticalLineFromTop2Bottom(uint8_t);
-void MoveCursorDown(void);
-void MoveCursorForward(void);
-void MoveCursorBackward(void);
-void MoveCursorUp(void);
-void PrintBottomOrUpperLine(uint8_t);
-void PrintMiddleLine(uint8_t);
-void SetCursor(uint8_t, uint8_t);
+void CopyCommand(unsigned char *puffer, const char* command) {
+  strcpy(*puffer, command);
+}
 
-#endif // DALIINTERFACE_LIGHT_TUI
+#endif // _DALIINTERFACE_LIGHT_TUI
