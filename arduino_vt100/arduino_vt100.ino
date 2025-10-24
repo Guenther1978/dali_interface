@@ -48,10 +48,10 @@ void setup() {
   delay(1000);
 
   for (uint8_t i = kColumnLeft + 1; i < kColumnRight; i++) {
-    MoveCursorToPosition(kLineTop, i, buffer);
+    MoveCursorToPosition(kLineBottom, i, buffer);
     Serial.write(buffer, kBufferSize);
     Serial.write('-');
-    MoveCursorToPosition(kLineBottom, i, buffer);
+    MoveCursorToPosition(kLineTop, i, buffer);
     Serial.write(buffer, kBufferSize);
     Serial.write('-');
   }
