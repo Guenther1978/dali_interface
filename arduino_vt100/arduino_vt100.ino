@@ -1,6 +1,6 @@
 #include <Arduino.h>
 
-unsigned char buffer[16];
+//unsigned char buffer[16];
 
 const uint8_t kBufferSizeCommand = 16;
 const uint8_t kBufferSizeNumber = 4;
@@ -36,7 +36,7 @@ typedef struct TuiFsm {
   uint8_t value;
 };
 
-TuiFsm *tui_fsm;
+TuiFsm tui_fsm;
 
 void InitTuiFsm(TuiFsm* tui_fsm) {
   tui_fsm->state = CHOOSE_ACTION;
@@ -49,7 +49,12 @@ void InitReadNumber(TuiFsm* tui_fsm) {
   for (uint8_t i = 0; i < 3; i++) {
     tui_fsm->buffer_number[i] = '0';
   }
-  MoveCursorToPosition(kLineNumber, kColumnValue, tui_fsm->buffer_command);
+  tui_fsm->buffer_number[3] = 0;
+  MoveCursorToPosition(kLineMessage, kColumnValue, tui_fsm);
+  Serial.write(tui_fsm->buffer_command, kBufferSizeCommand);
+  Serial.print("Geben Sie die Nummer der Lampe ein!");
+  MoveCursorToPosition(kLineNumber, kColumnValue, tui_fsm);
+  Serial.write(tui_fsm->buffer_command, kBufferSizeCommand);
 }
 
 void InitReadValue(TuiFsm* tui_fsm) {
@@ -58,15 +63,20 @@ void InitReadValue(TuiFsm* tui_fsm) {
   for (uint8_t i = 0; i < 3; i++) {
     tui_fsm->buffer_value[i] = '0';
   }
-  MoveCursorToPosition(kLineValue, kColumnValue, tui_fsm->buffer_command);
+  tui_fsm->buffer_value[3] = 0;
+  MoveCursorToPosition(kLineMessage, kColumnValue, tui_fsm);
+  Serial.write(tui_fsm->buffer_command, kBufferSizeCommand);
+  Serial.print("Geben Sie die Intensitaet oder den Befehl ein!");
+  MoveCursorToPosition(kLineValue, kColumnValue, tui_fsm);
+  Serial.write(tui_fsm->buffer_command, kBufferSizeCommand);
 }
 
-void MoveCursorToPosition(uint8_t line, uint8_t column, unsigned char* puffer) {
+void MoveCursorToPosition(uint8_t line, uint8_t column, TuiFsm* puffer) {
   //  puffer[0] = 27;
   //  puffer[1] = '[';
   //  sprintf(puffer+2, "%d;%dH",y,x);
   // the first specifying the line position and the second specifying the column position
-  sprintf(puffer, "%c[%d;%dH", 27, line, column);
+  sprintf(puffer->buffer_command, "%c[%d;%dH", 27, line, column);
 }
 
 void ClearScreen(unsigned char* puffer) {
@@ -87,11 +97,21 @@ void HandleChar(char input, TuiFsm* tui_fsm) {
         tui_fsm->buffer_number[2] = tui_fsm->buffer_number[1];
         tui_fsm->buffer_number[1] = tui_fsm->buffer_number[0];
         tui_fsm->buffer_number[0] = input;
+        MoveCursorToPosition(kLineNumber, kColumnValue, tui_fsm);
+        Serial.write(tui_fsm->buffer_command, kBufferSizeCommand);
+        for(uint8_t i = 0; i < 3; i++) {
+          Serial.write(tui_fsm->buffer_number[i]);
+        }
         break;
       case READ_VALUE:
         tui_fsm->buffer_value[2] = tui_fsm->buffer_value[1];
         tui_fsm->buffer_value[1] = tui_fsm->buffer_value[0];
         tui_fsm->buffer_value[0] = input;
+        MoveCursorToPosition(kLineNumber, kColumnValue, tui_fsm);
+        Serial.write(tui_fsm->buffer_command, kBufferSizeCommand);
+        for(uint8_t i = 0; i < 3; i++) {
+          Serial.write(tui_fsm->buffer_value[i]);
+        }
         break;
       default:
         break;
@@ -103,11 +123,16 @@ void HandleChar(char input, TuiFsm* tui_fsm) {
   if ((input == 'V') || (input == 'v')) {
     InitReadValue(tui_fsm);
   }
-    if ((input == 'S') || (input == 's')) {
-      tui_fsm->number = atoi(tui_fsm->buffer_number);
-      tui_fsm->value = atoi(tui_fsm->buffer_value);
+  if ((input == 'S') || (input == 's')) {
+    tui_fsm->number = atoi(tui_fsm->buffer_number);
+    tui_fsm->value = atoi(tui_fsm->buffer_value);
 
-      tui_fsm->state = CHOOSE_ACTION;
+    tui_fsm->state = CHOOSE_ACTION;
+  }
+  if (input == '/r') {
+    tui_fsm->state = CHOOSE_ACTION;
+    Serial.write(tui_fsm->buffer_command, kBufferSizeCommand);
+    Serial.print("Write number (n), write value (v) or send data (s)");
   }
 }
 
@@ -116,70 +141,70 @@ void setup() {
   Serial.begin(9600);
   while (!Serial);
 
-  ClearScreen(buffer);
-  Serial.write(buffer, kBufferSizeCommand);
+  //  ClearScreen(&tui_fsm);
+  Serial.write(tui_fsm.buffer_command, kBufferSizeCommand);
 
   for (uint8_t i = kLineTop + 1; i < kLineBottom; i++) {
-    MoveCursorToPosition(i, kColumnLeft, buffer);
-    Serial.write(buffer, kBufferSizeCommand);
+    MoveCursorToPosition(i, kColumnLeft, &tui_fsm);
+    Serial.write(tui_fsm.buffer_command, kBufferSizeCommand);
     Serial.write('|');
-    MoveCursorToPosition(i, kColumnRight, buffer);
-    Serial.write(buffer, kBufferSizeCommand);
+    MoveCursorToPosition(i, kColumnRight, &tui_fsm);
+    Serial.write(tui_fsm.buffer_command, kBufferSizeCommand);
     Serial.write('|');
   }
 
   for (uint8_t i = kColumnLeft + 1; i < kColumnRight; i++) {
-    MoveCursorToPosition(kLineBottom, i, buffer);
-    Serial.write(buffer, kBufferSizeCommand);
+    MoveCursorToPosition(kLineBottom, i, &tui_fsm);
+    Serial.write(tui_fsm.buffer_command, kBufferSizeCommand);
     Serial.write('-');
-    MoveCursorToPosition(kLineTop, i, buffer);
-    Serial.write(buffer, kBufferSizeCommand);
+    MoveCursorToPosition(kLineTop, i, &tui_fsm);
+    Serial.write(tui_fsm.buffer_command, kBufferSizeCommand);
     Serial.write('-');
   }
 
-  MoveCursorToPosition(kLineTop, kColumnLeft, buffer);
-  Serial.write(buffer, kBufferSizeCommand);
+  MoveCursorToPosition(kLineTop, kColumnLeft, &tui_fsm);
+  Serial.write(tui_fsm.buffer_command, kBufferSizeCommand);
   Serial.write('+');
 
-  MoveCursorToPosition(kLineBottom, kColumnLeft, buffer);
-  Serial.write(buffer, kBufferSizeCommand);
+  MoveCursorToPosition(kLineBottom, kColumnLeft, &tui_fsm);
+  Serial.write(tui_fsm.buffer_command, kBufferSizeCommand);
   Serial.write('+');
 
-  MoveCursorToPosition(kLineTop, kColumnRight, buffer);
-  Serial.write(buffer, kBufferSizeCommand);
+  MoveCursorToPosition(kLineTop, kColumnRight, &tui_fsm);
+  Serial.write(tui_fsm.buffer_command, kBufferSizeCommand);
   Serial.write('+');
 
-  MoveCursorToPosition(kLineBottom, kColumnRight, buffer);
-  Serial.write(buffer, kBufferSizeCommand);
+  MoveCursorToPosition(kLineBottom, kColumnRight, &tui_fsm);
+  Serial.write(tui_fsm.buffer_command, kBufferSizeCommand);
   Serial.write('+');
 
-  MoveCursorToPosition(kLineCaption, kColumnValue, buffer);
-  Serial.write(buffer, kBufferSizeCommand);
+  MoveCursorToPosition(kLineCaption, kColumnValue, &tui_fsm);
+  Serial.write(tui_fsm.buffer_command, kBufferSizeCommand);
   Serial.print("USB-Dali-Converter");
 
   for (uint8_t i = kColumnValue - 1; i < (19)  ; i++) {
-    MoveCursorToPosition(kLineCaption + 1, i, buffer);
-    Serial.write(buffer, kBufferSizeCommand);
+    MoveCursorToPosition(kLineCaption + 1, i, &tui_fsm);
+    Serial.write(tui_fsm.buffer_command, kBufferSizeCommand);
     Serial.write('-');
   }
 
-  MoveCursorToPosition(kLineNumber, kColumnLabel, buffer);
-  Serial.write(buffer, kBufferSizeCommand);
+  MoveCursorToPosition(kLineNumber, kColumnLabel, &tui_fsm);
+  Serial.write(tui_fsm.buffer_command, kBufferSizeCommand);
   Serial.print("Number");
 
-  MoveCursorToPosition(kLineValue, kColumnLabel, buffer);
-  Serial.write(buffer, kBufferSizeCommand);
+  MoveCursorToPosition(kLineValue, kColumnLabel, &tui_fsm);
+  Serial.write(tui_fsm.buffer_command, kBufferSizeCommand);
   Serial.print("Value");
 
-  MoveCursorToPosition(kLineMessage, kColumnLabel, buffer);
-  Serial.write(buffer, kBufferSizeCommand);
+  MoveCursorToPosition(kLineMessage, kColumnLabel, &tui_fsm);
+  Serial.write(tui_fsm.buffer_command, kBufferSizeCommand);
   Serial.print("Message: ");
 
-  MoveCursorToPosition(kLineMessage, kColumnValue, buffer);
-  Serial.write(buffer, kBufferSizeCommand);
+  MoveCursorToPosition(kLineMessage, kColumnValue, &tui_fsm);
+  Serial.write(tui_fsm.buffer_command, kBufferSizeCommand);
   Serial.print("Write number (n), write value (v) or send data (s)");
 
-  InitTuiFsm(tui_fsm);
+  InitTuiFsm(&tui_fsm);
 }
 
 void loop() {
@@ -190,11 +215,12 @@ void loop() {
 
   if (Serial.available() > 0) {
     char_in = Serial.read();
-    HandleChar(char_in, tui_fsm);
-    Serial.write(tui_fsm->buffer_command, kBufferSizeCommand);
-    Serial.write(tui_fsm->buffer_number, kBufferSizeNumber);
-    Serial.write(tui_fsm->buffer_value, kBufferSizeNumber);
+    HandleChar(char_in, &tui_fsm);
+    //    Serial.write(tui_fsm->buffer_command, kBufferSizeCommand);
+    //    Serial.write(tui_fsm->buffer_number, kBufferSizeNumber);
+    //    Serial.write(tui_fsm->buffer_value, kBufferSizeNumber);
 
+    //    Serial.write(tui_fsm.buffer_command, kBufferSizeCommand);
 
   }
 }
