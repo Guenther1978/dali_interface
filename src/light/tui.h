@@ -50,6 +50,9 @@ const uint8_t kLineMessage = 20;
 void DrawHorizontalLine(struct TuiFsm*);
 void DrawVerticalLine(struct TuiFsm*);
 void MoveCursorHome(struct TuiFsm*);
+void DrawHorizontalLine(void);
+void DrawVerticalLine(void);
+void MoveCursorHome(void);
 
 void DrawCorner(void);
 void DrawHorizontalLineFromLeft2Right(uint8_t);
@@ -72,6 +75,7 @@ typedef enum {
 } State;
 
 struct TuiFsm* {
+typedef struct TuiFsm {
   State state;
   unsigned char buffer_number[3];
   unsigned char buffer_value[3];
@@ -101,5 +105,28 @@ void ClearLine(struct TuiFsm* puffer);
 void ClearBuffer(unsigned char * buffer, unsigned char size_of_buffer);
 
 void HandleChar(char input, struct TuiFsm* tui_fsm);
+};
+
+TuiFsm tui_fsm;
+
+void InitTuiFsm(TuiFsm* tui_fsm);
+
+void ShowDaliAnswer(TuiFsm* tui_fsm, uint8_t answer);
+
+void InitMessage(TuiFsm* tui_fsm);
+
+void InitReadNumber(TuiFsm* tui_fsm);
+
+void InitReadValue(TuiFsm* tui_fsm);
+
+void MoveCursorToPosition(uint8_t line, uint8_t column, TuiFsm* puffer);
+
+void ClearScreen(TuiFsm* puffer);
+
+void ClearLine(TuiFsm* puffer);
+
+void ClearBuffer(unsigned char * buffer, unsigned char size_of_buffer);
+
+void HandleChar(char input, TuiFsm* tui_fsm);
 
 #endif // DALIINTERFACE_LIGHT_TUI
