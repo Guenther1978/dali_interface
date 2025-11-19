@@ -4,6 +4,6 @@
 #include "tui.h"
 
 void main(void) {
-  TuiFsm* tui_fsm;
+  struct TuiFsm* tui_fsm;
 }
   

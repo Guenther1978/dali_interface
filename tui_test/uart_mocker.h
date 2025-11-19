@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 void UART1_Write(uint8_t character) {
-  put(character);
+  puts(character);
 }
 
 unsigned char UART1_Read(void) {
@@ -10,9 +10,9 @@ unsigned char UART1_Read(void) {
 }
 
 void UART2_Write(uint8_t character) {
-  put(character);
+  putchar(character);
 }
 
-unsigned char UART1_Read(void) {
+unsigned char UART2_Read(void) {
   return 0x67;
 }

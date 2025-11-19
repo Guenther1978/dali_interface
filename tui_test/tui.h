@@ -48,21 +48,21 @@ const uint8_t kLineValue = 10;
 const uint8_t kLineReception = 13;
 const uint8_t kLineMessage = 20;
 
-void DrawHorizontalLine(struct TuiFsm*);
-void DrawVerticalLine(struct TuiFsm*);
-void MoveCursorHome(struct TuiFsm*);
+void DrawHorizontalLine(struct TuiFsm);
+void DrawVerticalLine(struct TuiFsm);
+void MoveCursorHome(struct TuiFsm);
 
-void DrawCorner(void);
-void DrawHorizontalLineFromLeft2Right(uint8_t);
-void DrawHorizontalLineFromRight2Left(uint8_t);
-void DrawRectangle(uint8_t, uint8_t);
-void DrawVerticalLineFromBottom2Top(uint8_t);
-void DrawVerticalLineFromTop2Bottom(uint8_t);
-void MoveCursorDown(void);
-void MoveCursorForward(void);
-void MoveCursorBackward(void);
-void MoveCursorUp(void);
-void SetCursor(uint8_t, uint8_t);
+//void DrawCorner(void);
+//void DrawHorizontalLineFromLeft2Right(uint8_t);
+//void DrawHorizontalLineFromRight2Left(uint8_t);
+//void DrawRectangle(uint8_t, uint8_t);
+//void DrawVerticalLineFromBottom2Top(uint8_t);
+//void DrawVerticalLineFromTop2Bottom(uint8_t);
+//void MoveCursorDown(void);
+//void MoveCursorForward(void);
+//void MoveCursorBackward(void);
+//void MoveCursorUp(void);
+//void SetCursor(uint8_t, uint8_t);
 
 typedef enum {
   CHOOSE_ACTION,
@@ -72,7 +72,7 @@ typedef enum {
   SEND
 } State;
 
-struct TuiFsm* {
+typedef struct TuiFsm {
   State state;
   unsigned char buffer_number[3];
   unsigned char buffer_value[3];
@@ -90,8 +90,6 @@ void InitMessage(struct TuiFsm* tui_fsm);
 void InitReadNumber(struct TuiFsm* tui_fsm);
 
 void InitReadValue(struct TuiFsm* tui_fsm);
-
-void MoveCursorHome(struct TuiFsm* tui_fsm);
 
 void MoveCursorToPosition(uint8_t line, uint8_t column, struct TuiFsm* puffer);
 
