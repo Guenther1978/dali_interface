@@ -33,6 +33,19 @@
     THIS SOFTWARE.
 */
 #include "mcc_generated_files/system/system.h"
+#include "light/tui.h"
+
+void InitializePortA(void)
+{
+    PORTA = 0x00;
+    ANSELA = 0x00;
+    TRISA = 0xFF;
+}
+
+uint8_t GetAdress(void)
+{
+    return PORTA;
+}
 
 /*
     Main application
@@ -40,6 +53,8 @@
 
 int main(void)
 {
+    TuiFsm tui_fsm;
+    
     SYSTEM_Initialize();
     // If using interrupts in PIC18 High/Low Priority Mode you need to enable the Global High and Low Interrupts 
     // If using interrupts in PIC Mid-Range Compatibility Mode you need to enable the Global Interrupts 
@@ -47,54 +62,77 @@ int main(void)
 
     uint8_t character_uart_1 = 0;
     uint8_t character_uart_2 = 0;
+
+// Initialize UART2    
     
     UART1_TransmitEnable();
     UART1_ReceiveEnable();
-    UART2_TransmitEnable();
-    UART2_ReceiveEnable();
 
     TRISCbits.TRISC7 = 1;
     ANSELCbits.ANSELC7 = 0;
     TRISCbits.TRISC6 = 0;
-    TRISBbits.TRISB5 = 1;
-    ANSELBbits.ANSELB5 = 0;
-    TRISBbits.TRISB4 = 0;
-    
+
     U1CON2bits.TXPOL = 0;
-    U2CON2bits.TXPOL = 0;
     U1CON2bits.RXPOL = 0;
-    U2CON2bits.RXPOL = 0;
 
     /* RC6 is TX1 */
     RC6PPS = 0x13;
     /* RC7 is RX1*/
     U1RXPPS = 0x17;
-    
-    /* RB4 is TX2 */
-    RB4PPS = 0x16;
-    /* RB5 is RX2*/
-    U2RXPPS = 0x0D;
 
     /* High Baud Rate Select */
     U1CON0bits.BRGS = 1;
+    
+    /* Baud rate 9600 */
+    U1BRGL = 25;
+    U1BRGH = 0;
+    
+
+    /* Serial Port Enable */
+    UART1_Enable();
+
+    UART1_Write('Uart 1 bereit!');
+
+// Initialize UART2    
+    
+    UART2_TransmitEnable();
+    UART2_ReceiveEnable();
+
+    TRISCbits.TRISC5 = 1;
+    ANSELCbits.ANSELC5 = 0;
+    TRISCbits.TRISC4 = 0;
+    
+        
+    /* RC4 is TX2 */
+    RC4PPS = 0x16;
+    /* RC5 is RX2*/
+    U2RXPPS = 0x11;
+
+    /* High Baud Rate Select */
     U2CON0bits.BRGS = 1;
 
 
     /* 16-bit Baud Rate Generator is used */
     //BAUD2CONbits.BRG16 = 1;
 
-    /* Baud rate 9600 */
-    U1BRGL = 25;
-    U1BRGH = 0;
-    U2BRGL = 25;
+    /* Baud rate 1200 */
+    U2BRGL = 207;
     U2BRGH = 0;
-
-    /* Serial Port Enable */
-    UART1_Enable();
+    
+    
+    U2CON0bits.MODE = 0x08;
+    
+    U2CON2bits.STP = 0b10;
+    U2CON2bits.RXPOL = 1;
+    U2CON2bits.TXPOL = 1;
+    
+    U2P1H = 0x16;
+    U2P2H = 0x15;
+    
     UART2_Enable();
+    
 
-    UART1_Write('1');
-    UART2_Write('2');
+//    UART2_Write('Uart 2 bereit!');
     
     UART1_ReceiveInterruptEnable();
     UART2_ReceiveInterruptEnable();
@@ -104,6 +142,8 @@ int main(void)
 
     // Disable the Global Interrupts 
     //INTERRUPT_GlobalInterruptDisable(); 
+    
+    //InitTuiFsm(&tui_fsm);
     
     while(1)
     {
@@ -127,10 +167,10 @@ int main(void)
             {
                 UART1_Write(character_uart_2);
             }
-            if (UART2_IsTxReady())
-            {
-                UART2_Write(character_uart_2);
-            }
+//            if (UART2_IsTxReady())
+//            {
+//                UART2_Write(character_uart_2);
+//            }
         }
     }
 }

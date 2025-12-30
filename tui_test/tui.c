@@ -6,7 +6,7 @@
 //#include "mcc_generated_files/system/system.h"
 
 
-void InitTuiFsm(struct TuiFsm* tui_fsm) {
+void InitTuiFsm(TuiFsm* tui_fsm) {
     // Draw Rectangle
   ClearScreen(tui_fsm);
   for(uint8_t i = 0; i < kBufferSizeCommand; i++)
@@ -14,7 +14,7 @@ void InitTuiFsm(struct TuiFsm* tui_fsm) {
         UART1_Write(tui_fsm->buffer_command[i]);
     }
   
-  MoveCursorHome(&tui_fsm);   
+  MoveCursorHome(tui_fsm);   
   for(uint8_t i = 0; i < kBufferSizeCommand; i++)
     {
         UART1_Write(tui_fsm->buffer_command[i]);
@@ -113,7 +113,7 @@ void InitTuiFsm(struct TuiFsm* tui_fsm) {
   InitMessage(tui_fsm);
 }
 
-void ShowDaliAnswer(struct TuiFsm* tui_fsm, uint8_t answer) {
+void ShowDaliAnswer(TuiFsm* tui_fsm, uint8_t answer) {
   MoveCursorToPosition(kLineReception, kColumnValue, tui_fsm);
   for(uint8_t i = 0; i < kBufferSizeCommand; i++)
     {
@@ -123,7 +123,7 @@ void ShowDaliAnswer(struct TuiFsm* tui_fsm, uint8_t answer) {
   tui_fsm->state = CHOOSE_ACTION;
 }
 
-void InitMessage(struct TuiFsm* tui_fsm) {
+void InitMessage(TuiFsm* tui_fsm) {
   for(uint8_t i = 0; i < kBufferSizeCommand; i++)
     {
         UART1_Write(tui_fsm->buffer_command[i]);
@@ -135,7 +135,7 @@ void InitMessage(struct TuiFsm* tui_fsm) {
   tui_fsm->state = CHOOSE_ACTION;
 }
 
-void InitReadNumber(struct TuiFsm* tui_fsm) {
+void InitReadNumber(TuiFsm* tui_fsm) {
   tui_fsm->state = READ_NUMBER;
   tui_fsm->number = 0;
   for (uint8_t i = 0; i < 3; i++) {
@@ -158,7 +158,7 @@ void InitReadNumber(struct TuiFsm* tui_fsm) {
     }
 }
 
-void InitReadValue(struct TuiFsm* tui_fsm) {
+void InitReadValue(TuiFsm* tui_fsm) {
   tui_fsm->state = READ_VALUE;
   tui_fsm->value = 0;
   for (uint8_t i = 0; i < 3; i++) {
@@ -181,19 +181,19 @@ void InitReadValue(struct TuiFsm* tui_fsm) {
     }
 }
 
-void MoveCursorToPosition(uint8_t line, uint8_t column, struct TuiFsm* puffer) {
+void MoveCursorToPosition(uint8_t line, uint8_t column, TuiFsm* puffer) {
   sprintf(puffer->buffer_command, "%c[%d;%dH", 27, line, column);
 }
 
-void ClearScreen(struct TuiFsm* puffer) {
+void ClearScreen(TuiFsm* puffer) {
   sprintf(puffer->buffer_command, "%c[2J", 27);
 }
 
-void ClearLine(struct TuiFsm* puffer) {
+void ClearLine(TuiFsm* puffer) {
   sprintf(puffer->buffer_command, "%c[0K", 27);
 }
 
-void MoveCursorHome(struct TuiFsm* puffer) {
+void MoveCursorHome(TuiFsm* puffer) {
   sprintf(puffer->buffer_command, "%c[H", 27);
 }
 
@@ -257,13 +257,14 @@ void HandleChar(char input, TuiFsm* tui_fsm) {
         UART1_Write(kSending[i]);
     }
     UART1_Write(tui_fsm->number);
-    UART1_Write(" ");
+    UART1_Write(' ');
     UART1_Write(tui_fsm->number);
-    UART1_Write(", ");
+    UART1_Write(',');
+    UART1_Write(' ');
     UART1_Write(tui_fsm->value);
-    UART1_Write(" ");
+    UART1_Write(' ');
     UART1_Write(tui_fsm->value);
-    UART1_Write(" ");
+    UART1_Write(' ');
 
     UART2_Write(tui_fsm->number);
     UART2_Write(tui_fsm->value);
@@ -278,7 +279,7 @@ void HandleChar(char input, TuiFsm* tui_fsm) {
     {
         UART1_Write(tui_fsm->buffer_command[i]);
     }
-    UART1_Write("|");
+    UART1_Write('|');
   }
   if (input == '/r') {
     InitMessage(tui_fsm);

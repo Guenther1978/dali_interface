@@ -9,9 +9,9 @@
 //#include <stdint.h>
 //#include <stdio.h>
 #include <string.h>
-#include "uart_mocker.h"
-//#include "../mcc_generated_files/uart/uart1.h"
-//#include "../mcc_generated_files/uart/uart2.h"
+//#include "uart_mocker.h"
+#include "../mcc_generated_files/uart/uart1.h"
+#include "../mcc_generated_files/uart/uart2.h"
 
 const char* kCaption = {"USB-Dali-Interface"};
 const char* kNumber = {"Number"};
@@ -48,22 +48,6 @@ const uint8_t kLineValue = 10;
 const uint8_t kLineReception = 13;
 const uint8_t kLineMessage = 20;
 
-void DrawHorizontalLine(struct TuiFsm);
-void DrawVerticalLine(struct TuiFsm);
-void MoveCursorHome(struct TuiFsm);
-
-//void DrawCorner(void);
-//void DrawHorizontalLineFromLeft2Right(uint8_t);
-//void DrawHorizontalLineFromRight2Left(uint8_t);
-//void DrawRectangle(uint8_t, uint8_t);
-//void DrawVerticalLineFromBottom2Top(uint8_t);
-//void DrawVerticalLineFromTop2Bottom(uint8_t);
-//void MoveCursorDown(void);
-//void MoveCursorForward(void);
-//void MoveCursorBackward(void);
-//void MoveCursorUp(void);
-//void SetCursor(uint8_t, uint8_t);
-
 typedef enum {
   CHOOSE_ACTION,
   READ_NUMBER,
@@ -72,33 +56,39 @@ typedef enum {
   SEND
 } State;
 
-typedef struct TuiFsm {
+typedef struct {
   State state;
   unsigned char buffer_number[3];
   unsigned char buffer_value[3];
   unsigned char buffer_command[16];
   uint8_t number;
   uint8_t value;
-} tui_fsm;
+} TuiFsm;
 
-void InitTuiFsm(struct TuiFsm* tui_fsm);
+void DrawHorizontalLine(TuiFsm*);
 
-void ShowDaliAnswer(struct TuiFsm* tui_fsm, uint8_t answer);
+void DrawVerticalLine(TuiFsm*);
 
-void InitMessage(struct TuiFsm* tui_fsm);
+void MoveCursorHome(TuiFsm*);
 
-void InitReadNumber(struct TuiFsm* tui_fsm);
+void InitTuiFsm(TuiFsm*);
 
-void InitReadValue(struct TuiFsm* tui_fsm);
+void InitMessage(TuiFsm*);
 
-void MoveCursorToPosition(uint8_t line, uint8_t column, struct TuiFsm* puffer);
+void InitReadNumber(TuiFsm*);
 
-void ClearScreen(struct TuiFsm* puffer);
+void InitReadValue(TuiFsm*);
 
-void ClearLine(struct TuiFsm* puffer);
+void ShowDaliAnswer(TuiFsm*, uint8_t);
 
-void ClearBuffer(unsigned char * buffer, unsigned char size_of_buffer);
+void MoveCursorToPosition(uint8_t, uint8_t, TuiFsm*);
 
-void HandleChar(char input, struct TuiFsm* tui_fsm);
+void ClearScreen(TuiFsm*);
+
+void ClearLine(TuiFsm*);
+
+void ClearBuffer(unsigned char *, unsigned char);
+
+void HandleChar(char, TuiFsm*);
 
 #endif // DALIINTERFACE_LIGHT_TUI
